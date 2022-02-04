@@ -29,7 +29,7 @@ knitr::opts_knit$set(root.dir='..')
 ```{r dataread, warning=F,message=F}
 ####-----Reading in Data and Stacking it ----- ####
 #Reading in files
-files <- list.files('C://Users//Owner//Documents//CSU//SOCR580A7-DataSci//Week2//2_fire_data_wrangle//data',full.names=T)
+files <- list.files('data',full.names=T)
 
 #Read in individual data files
 ndmi <- read_csv(files[1]) %>% 
