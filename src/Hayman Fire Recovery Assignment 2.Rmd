@@ -6,7 +6,7 @@ output:
   html_document:
     toc: true
     toc_float: true
-    toc_level: 3
+    toc_depth: 3
 editor_options: 
   chunk_output_type: inline
 ---
@@ -96,9 +96,9 @@ annual_long_ndsi<-filter(full_long,data=="ndsi") %>%
   group_by(site,year)  %>%
   summarize(mean_NDSI=mean(value))
 
-ndsi_ndvi <- inner_join(annual_long_ndsi,annual_long_ndvi,by="year")
+ndsi_ndvi_annual <- inner_join(annual_long_ndsi,annual_long_ndvi,by=c("year","site"))
 
-ggplot(ndsi_ndvi,aes(x=mean_NDSI,y=mean_NDVI,col=site.y)) + 
+ggplot(ndsi_ndvi_annual,aes(x=mean_NDSI,y=mean_NDVI,col=site)) + 
   geom_point() + 
   theme_few() + 
   scale_color_few() + 
@@ -106,18 +106,16 @@ ggplot(ndsi_ndvi,aes(x=mean_NDSI,y=mean_NDVI,col=site.y)) +
   labs(x = "Mean Winter NDSI", y = "Mean Summer NDVI",
        title ="Previous Year's Snow Index in Relation to Summer Vegetation Growth")
 
-cor(ndsi_ndvi$mean_NDSI,ndsi_ndvi$mean_NDVI)
+cor(ndsi_ndvi_annual$mean_NDSI,ndsi_ndvi_annual$mean_NDVI)
 ```
 
-Unlike the strong positive correlation we saw in the NDMI x NDVI graph and calculated value (R=`r cor(summer_only$ndvi,summer_only$ndmi)`), there is no strong effect for NDSI x NDVI. The spread of the data in the graph does not indicate a correlated direction. This conclusion is supported by the calculated correlation coefficient, R= `r cor(ndsi_ndvi$mean_NDSI,ndsi_ndvi$mean_NDVI)`. The correlation between these two values is slightly positive, but very weak. From the graph and calculated correlation coefficient, we can conclude that there is no strong relationship between mean winter NDSI and mean summer NDVI. Instead, the relationship is weak, and an increase in mean winter NDSI may correspond to a slight-to-no increase in mean summer NDVI. 
+Unlike the strong positive correlation we saw in the NDMI x NDVI graph and calculated value (R=`r cor(summer_only$ndvi,summer_only$ndmi)`), there is no strong effect for NDSI x NDVI. The spread of the data in the graph does not indicate a correlated direction. This conclusion is supported by the calculated correlation coefficient, R= `r cor(ndsi_ndvi_annual$mean_NDSI,ndsi_ndvi_annual$mean_NDVI)`. The correlation between these two values is slightly positive, but very weak. From the graph and calculated correlation coefficient, we can conclude that there is no strong relationship between mean winter NDSI and mean summer NDVI. Instead, the relationship is weak, and an increase in mean winter NDSI may correspond to a slight-to-no increase in mean summer NDVI. 
 
 
 ## Question 3
 
 ### How is the snow effect from question 2 different between pre- and post-burn and burned and unburned? 
 ```{r message=FALSE}
-
-
 ndvi_prepost <- filter(full_long,data=="ndvi") %>%
   mutate(year = year(DateTime),
          month = month(DateTime),
@@ -160,11 +158,11 @@ ggplot(ndsi_ndvi,aes(x=mean_ndsi,y=mean_ndvi,color=site)) +
 
 We saw a very weak but positive correlation between mean winter NDSI and mean summer NDVI in Q2. We can see similar results from graphs illustrating the relationship between the burned/unburned and pre/post-burn mean winter NDSI and mean summer NDVI.  
 
-The burned sites may have a slight negative correlation, but any correlation if present is very weak. The unburned sites also appear to exhibit a slightly negative correlation, but still this correlation is very weak.  
+The burned sites may have a slight positive correlation, but any correlation if present is very weak. The unburned sites appear to exhibit a slightly negative correlation, but still this correlation is very weak.  
 
-The pre-burned sites do not appear correlated. The visualized data progress horizontally without an indication of either a positive or negative relationship. However, the burned site pre-burn has a few points that decrease in value indicating a possible negative correlation. The post-burned sites may have a weak and slightly negative correlation.  
+The pre-burned sites do not appear correlated. The visualized data progress horizontally without an indication of either a positive or negative relationship. Similarly, the post-burned site do not have a strong correlation, but may have a slight positive correlation because the data seem to be slightly progressing in a positive direction.    
 
-The patterns appear similar between pre- and post-burn within the same treatment (burned/unburned). Ultimately, the correlations are weak between winter NDSI and summer NDVi regardless of site or treatment.None of the graphs showcase strong positive or negative correlations.
+Ultimately, the correlations are weak between winter NDSI and summer NDVi regardless of site or treatment.None of the graphs showcase strong positive or negative correlations.
 
 
 ## Question 4
@@ -177,7 +175,7 @@ month_ndvi <- spread(data=full_long,key='data',value='value') %>%
   mutate(month = month(DateTime),
          year = year(DateTime)) %>%
   group_by(site,month)  %>%
-  summarize(mean_NDVI=mean(ndvi))
+  summarize(mean_NDVI=mean(ndvi)) 
 
 
 ggplot(month_ndvi,aes(x=month,y=mean_NDVI,color=site)) + 
@@ -189,7 +187,7 @@ ggplot(month_ndvi,aes(x=month,y=mean_NDVI,color=site)) +
        title ="Average NDVI by Month")
 ```
   
-  The NDVI value corresponds to more greenness because it is a vegetation index. September has the greatest mean NDVI value for the unburned site, closely followed by August. August had the greatest mean NDVI value for the burned site, closely followed by September.  
+  A high NDVI value corresponds to more greenness because it is a vegetation index. September has the greatest mean NDVI value for the unburned site, closely followed by August. August had the greatest mean NDVI value for the burned site, closely followed by September.  
   
   However, the decrease from August to September in the burned site is greater than the increase in greenness from August to September in the burned site. Therefore, August is the greenest month on average. 
 
@@ -225,7 +223,7 @@ The decrease in NDSI from January to February in the burned site is greater than
 
 1) `gather` was used to stack as a tidy dataset in the first section titled, "Reading files"
 ```{r message=FALSE, warning=FALSE}
-# Stack as a tidy dataset
+# Stack as a tidy dataset **using tidyverse**.
 full_long_bonus <- rbind(ndvi,ndmi,ndsi) %>%
   pivot_longer(.,
                cols=c("burned","unburned"),
